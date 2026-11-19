@@ -76,7 +76,7 @@ h2{font-family:var(--ft);font-weight:500;font-size:clamp(1.9rem,7vw,2.8rem);line
 <div id="folha" aria-hidden="true"></div>
 <nav id="dots" aria-hidden="true"></nav>
 <button id="musicBtn" aria-label="Ligar ou desligar a música">♫</button>
-<audio id="audio" loop preload="none"></audio>
+<audio id="audio" loop preload="auto"></audio>
 
 <script>
 /* ==========================================================================
@@ -112,7 +112,8 @@ const CONFIG = {
   /* DATA E HORA (AAAA-MM-DDTHH:MM:SS) — A CONTAGEM REGRESSIVA CONTA ATÉ AQUI */
   DATA_HORA: "2027-03-27T19:30:00",
 
-  /* MÚSICA (LINK DO YOUTUBE OU ARQUIVO MP3) — COMEÇA NO PRIMEIRO TOQUE DO CONVIDADO
+  /* MÚSICA (LINK DO YOUTUBE OU ARQUIVO MP3) — TENTA COMEÇAR SOZINHA AO ABRIR; SE O NAVEGADOR
+     BLOQUEAR, COMEÇA NO PRIMEIRO TOQUE DO CONVIDADO
      LINKS DO GITHUB (github.com/.../blob/...) SÃO CONVERTIDOS AUTOMATICAMENTE PARA LINK DIRETO */
   MUSICA: "MusicaAny.mp3",
   SOM_VIRADA: "COLE O MP3 DO SOM DE VIRAR A PÁGINA AQUI (OPCIONAL)",
@@ -254,7 +255,10 @@ function conta() {
 }
 conta(); setInterval(conta, 1000);
 
-/* música (YouTube ou MP3): começa no primeiro toque do convidado */
+/* ---------- música (YouTube ou MP3) ----------
+   1) tenta começar sozinha assim que o convite abre;
+   2) os navegadores costumam bloquear som automático, então, se bloquear,
+      ela começa no PRIMEIRO toque/clique/tecla do convidado (e continua tentando até tocar). */
 const audio = $('#audio'), mb = $('#musicBtn'), MUS = ok(C.MUSICA) ? String(C.MUSICA).replace(/^(?:https?:)?\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/([^/]+)\/(.+)$/, 'https://cdn.jsdelivr.net/gh/$1/$2@$3/$4') : null;
 const ytId = u => { const m = String(u).match(/(?:youtu\.be\/|[?&]v=|\/shorts\/|\/embed\/|\/live\/)([\w-]{11})/); return m ? m[1] : null; };
 const MID = MUS && ytId(MUS);
@@ -262,11 +266,14 @@ let mp = null, mReady = false, pend = false;
 const tocando = () => MID ? !!(mp && mReady && mp.getPlayerState() === 1) : !audio.paused;
 function tocar(on) {
   if (MID) { if (!mReady) { pend = on; return; } on ? mp.playVideo() : mp.pauseVideo(); }
-  else if (on) audio.play().then(() => mb.classList.add('tocando')).catch(() => {});
-  else { audio.pause(); mb.classList.remove('tocando'); }
+  else if (on) audio.play().catch(() => {});
+  else audio.pause();
 }
 if (MUS) {
   mb.classList.add('ativo');
+  const evs = ['pointerdown', 'click', 'keydown', 'touchend'];
+  const parar = () => evs.forEach(t => removeEventListener(t, iniciar));
+  const iniciar = e => { if (e.target.closest && e.target.closest('#musicBtn')) return; tocar(true); };
   if (MID) {
     const box = document.createElement('div'); box.id = 'ytm';
     box.style.cssText = 'position:fixed;right:0;top:0;width:200px;height:200px;opacity:.01;pointer-events:none;z-index:0';
@@ -274,13 +281,15 @@ if (MUS) {
     const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; document.head.appendChild(s);
     window.onYouTubeIframeAPIReady = () => { mp = new YT.Player('ytm', { videoId: MID, playerVars: { controls: 0, playsinline: 1, rel: 0 }, events: {
       onReady: () => { mReady = true; mp.setVolume(70); if (pend) mp.playVideo(); },
-      onStateChange: e => { if (e.data === 0) { mp.seekTo(0); mp.playVideo(); } mb.classList.toggle('tocando', e.data === 1); } } }); };
-  } else audio.src = MUS;
-  const evs = ['pointerdown', 'keydown', 'touchend'];
-  const parar = () => evs.forEach(t => removeEventListener(t, iniciar));
-  function iniciar(e) { if (e.target.closest && e.target.closest('#musicBtn')) return; tocar(true); parar(); }
+      onStateChange: e => { if (e.data === 0) { mp.seekTo(0); mp.playVideo(); } const p = e.data === 1; mb.classList.toggle('tocando', p); if (p) parar(); } } }); };
+  } else {
+    audio.src = MUS;
+    audio.addEventListener('playing', () => { mb.classList.add('tocando'); parar(); });
+    audio.addEventListener('pause', () => mb.classList.remove('tocando'));
+  }
   evs.forEach(t => addEventListener(t, iniciar));
   mb.onclick = e => { e.stopPropagation(); parar(); tocar(!tocando()); };
+  tocar(true); /* tentativa automática ao abrir */
 }
 </script>
 </body>
