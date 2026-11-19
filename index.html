@@ -73,6 +73,14 @@ h2{font-family:var(--ft);font-weight:500;font-size:clamp(1.9rem,7vw,2.8rem);line
 #folha .sombra{position:absolute;inset:0;z-index:5;background:linear-gradient(90deg,rgba(0,0,0,0),rgba(0,0,0,.55));opacity:0;animation:somb 1.1s forwards}
 @keyframes vira{to{transform:rotateY(-180deg)}}
 @keyframes somb{to{opacity:1}}
+
+/* tela de abertura: o toque do convidado libera a música automática */
+#abertura{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;padding:28px;text-align:center;
+  background:linear-gradient(160deg,#1550b0,var(--bg) 70%);transition:opacity .9s ease,visibility .9s}
+#abertura.sai{opacity:0;visibility:hidden;pointer-events:none}
+#abertura .toque{font-family:var(--ft);font-style:italic;font-size:1.15rem;letter-spacing:.04em;padding:14px 34px;border-radius:99px;border:1px solid var(--ouro);
+  background:rgba(255,255,255,.08);animation:respira 3.2s ease-in-out infinite}
+@keyframes respira{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 </style>
 </head>
 <body>
@@ -125,6 +133,11 @@ const CONFIG = {
      LINKS DO GITHUB (github.com/.../blob/...) SÃO CONVERTIDOS AUTOMATICAMENTE PARA LINK DIRETO */
   MUSICA: "MusicaAny.mp3",
   SOM_VIRADA: "COLE O MP3 DO SOM DE VIRAR A PÁGINA AQUI (OPCIONAL)",
+
+  /* TELA DE ABERTURA: os navegadores só deixam o som tocar depois de um toque do convidado.
+     Com USAR: true, aparece uma tela "Toque para abrir" e a música começa sozinha nesse toque.
+     USAR: false = sem tela de abertura (a música só começa no primeiro toque em qualquer lugar). */
+  ABERTURA: { USAR: true, TEXTO: "Toque para abrir" },
 
   /* FUNDOS DE CADA PÁGINA: IMAGEM E/OU VÍDEO MP4 (TOCA MUDO EM LOOP)
      SUGESTÃO DE TAMANHO PARA CELULAR: 1080 x 1920 px (9:16) */
@@ -298,6 +311,16 @@ if (MUS) {
   evs.forEach(t => addEventListener(t, iniciar));
   mb.onclick = e => { e.stopPropagation(); parar(); tocar(!tocando()); };
   tocar(true); /* tentativa automática ao abrir */
+
+  /* tela de abertura: o toque abre o convite e inicia a música */
+  if (C.ABERTURA && C.ABERTURA.USAR !== false) {
+    const ab = document.createElement('div');
+    ab.id = 'abertura';
+    ab.innerHTML = `${nomeHtml ? `<div class="nomes">${nomeHtml}</div>` : ''}<button class="toque" id="btnAbrir">${C.ABERTURA.TEXTO || 'Toque para abrir'}</button>`;
+    document.body.appendChild(ab);
+    const abrirConvite = () => { tocar(true); ab.classList.add('sai'); setTimeout(() => ab.remove(), 1000); };
+    ab.addEventListener('click', abrirConvite);
+  }
 }
 </script>
 </body>
