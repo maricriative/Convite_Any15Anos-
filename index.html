@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#061a4a">
-<title>Amanda Santos • 15 anos</title>
+<title>Amanda Santos • 15 </title>
 <meta property="og:title" content="Amanda Santos • 15 anos">
 <meta property="og:description" content="Você recebeu um convite especial. Deslize para abrir.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -165,7 +165,7 @@ const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const f = o => new Intl.DateTimeFormat('pt-BR', o).format(d);
 const dia = pad(d.getDate()), mes = cap(f({ month: 'long' })), ano = d.getFullYear();
 const nome = C.NOME.toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
-document.title = `${nome} • ${C.IDADE} anos`;
+document.title = `${nome} • ${C.IDADE} `;
 const M = C.MONOGRAMA;
 const nomeHtml = ok(M.ARQUIVO) ? `<img class="mono" src="${M.ARQUIVO}" alt="${nome}" style="--mw:${M.LARGURA || 420}px">` : nome;
 
