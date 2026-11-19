@@ -4,9 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#061a4a">
-<title>Amanda Santos • 15 </title>
-<meta property="og:title" content="Amanda Santos • 15 anos">
+<!-- ✏️ TEXTO QUE APARECE NA PRÉVIA DO LINK (WhatsApp, Instagram etc.) E NA ABA DO NAVEGADOR.
+     Os aplicativos leem SOMENTE estas linhas, por isso elas ficam aqui e não no CONFIG.
+     Troque o texto entre aspas se quiser outro título ou descrição. -->
+<title>Convite de 15 anos</title>
+<meta property="og:type" content="website">
+<meta property="og:title" content="Convite de 15 anos">
 <meta property="og:description" content="Você recebeu um convite especial. Deslize para abrir.">
+<meta name="description" content="Você recebeu um convite especial. Deslize para abrir.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>
@@ -86,9 +91,12 @@ h2{font-family:var(--ft);font-weight:500;font-size:clamp(1.9rem,7vw,2.8rem);line
    ========================================================================== */
 const CONFIG = {
 
-  /* DEBUTANTE */
-  NOME: "AMANDA SANTOS",
+  /* DEBUTANTE
+     NOME: só aparece se o monograma abaixo não for preenchido (vira o nome em cursiva na capa).
+     TITULO_ABA: texto da aba do navegador (para a prévia do link, edite as linhas <title> e og: no topo do arquivo). */
+  NOME: "",
   IDADE: "",
+  TITULO_ABA: "Convite de 15 anos",
 
   /* MONOGRAMA DA CAPA (PNG COM FUNDO TRANSPARENTE, IDEAL 1000 A 1200px DE LARGURA, SEM MARGEM SOBRANDO)
      LARGURA = TAMANHO EM px. AUMENTE PARA CRESCER (NO CELULAR NUNCA PASSA DE 92% DA TELA)
@@ -165,10 +173,10 @@ const d = new Date(C.DATA_HORA), pad = n => String(n).padStart(2, '0');
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const f = o => new Intl.DateTimeFormat('pt-BR', o).format(d);
 const dia = pad(d.getDate()), mes = cap(f({ month: 'long' })), ano = d.getFullYear();
-const nome = C.NOME.toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
-document.title = `${nome} • ${C.IDADE} `;
+const nome = (C.NOME || '').toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
+if (C.TITULO_ABA) document.title = C.TITULO_ABA;
 const M = C.MONOGRAMA;
-const nomeHtml = ok(M.ARQUIVO) ? `<img class="mono" src="${M.ARQUIVO}" alt="${nome}" style="--mw:${M.LARGURA || 420}px">` : nome;
+const nomeHtml = ok(M.ARQUIVO) ? `<img class="mono" src="${M.ARQUIVO}" alt="${nome || 'Convite de 15 anos'}" style="--mw:${M.LARGURA || 420}px">` : nome;
 
 const bg = k => {
   const x = (C.FUNDOS && C.FUNDOS[k]) || {};
@@ -180,7 +188,7 @@ const paginas = [
   `<section class="pg" id="p-capa">${bg('CAPA')}
     <p class="kicker in">${T.CAPA_TOPO}</p>
     <h1 class="nomes in">${nomeHtml}</h1>
-    <p class="idade in">${C.IDADE} </p>
+    ${C.IDADE ? `<p class="idade in">${C.IDADE}</p>` : ''}
     <p class="aviso in" style="opacity:.6;font-size:.8rem">${T.CAPA_DICA}</p></section>`,
 
   `<section class="pg">${bg('DATA')}
